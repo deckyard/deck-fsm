@@ -1,0 +1,19 @@
+[package]
+name = "@deckyard/fsm"
+version = "0.1.0"
+description = "Finite state machines: define states and transitions, check the definition, fire events with guards and hooks, load from TOML, YAML or JSON, draw as Mermaid or Graphviz"
+license = "LGPL-3.0-only"
+authors = ["mplx <mplx@jennifer-lang.dev>"]
+# Pure computation: no network, programs or databases.
+capabilities = []
+keywords = ["fsm", "state-machine", "workflow", "states", "transitions", "mermaid", "graphviz"]
+
+[package.urls]
+deck = "https://raw.githubusercontent.com/deckyard/deck-fsm/main/deck.toml"
+homepage = "https://github.com/deckyard/deck-fsm"
+manual = "https://deckyard.github.io/deck-fsm/"
+
+# Both binaries: `jennifer-tiny` has every library the deck uses.
+[engines]
+jennifer = ">=0.25.0"
+jennifer-tiny = ">=0.25.0"
