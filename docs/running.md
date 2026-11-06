@@ -24,8 +24,8 @@ Each hook gets the context the step before returned; the `Step` carries the
 last one. A transition from a state back to itself runs both hooks.
 
 `fire` throws when the state is not one of the machine's, when no transition
-leaves it on the event, or when every guard refused. Nothing has run then,
-so the stored state is still right.
+leaves it on the event, or when every guard refused. The guards it tried may
+have run, but no hook has, so the stored state is still right.
 
 ## Asking first
 
