@@ -41,7 +41,7 @@ io.printf("%s, can %v\n", $state, fsm.events($m, $state, {}));   # locked, can [
 
 ## Requirements
 
-Jennifer 0.25.0 or newer, `jennifer` or `jennifer-tiny`. No capabilities:
+Jennifer 0.26.0 or newer, `jennifer` or `jennifer-tiny`. No capabilities:
 the deck is pure computation.
 
 ## Development

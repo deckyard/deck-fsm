@@ -59,4 +59,4 @@ An error a guard or hook throws reaches the caller unchanged.
 
 ## Requirements
 
-Jennifer 0.25.0 or newer, `jennifer` or `jennifer-tiny`. No capabilities.
+Jennifer 0.26.0 or newer, `jennifer` or `jennifer-tiny`. No capabilities.
