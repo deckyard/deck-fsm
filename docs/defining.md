@@ -139,7 +139,9 @@ otherwise drop the guard without a word. Messages give the place:
 A document may hold at most `MAX_STATES` (10000) states and final states,
 and its transitions at most `MAX_EDGES` (10000) source states in all. YAML
 aliases let a few bytes repeat a long list, so without a limit a small
-document could build a huge machine. Machines built in code have no limit.
+document could build a huge machine. Past either cap, and past the decoder's
+own nesting and node caps, `load` throws `Error{kind: "limit"}`. Machines
+built in code have no limit.
 
 YAML follows version 1.2: `on`, `off`, `yes` and `no` are strings, but a
 state named `1` or `007` must be quoted. JSON must be strict JSON.

@@ -14,8 +14,10 @@
  *
  * Guards and hooks are the caller's own top-level functions, taking one
  * `Step`. A guard returns `bool`; a hook returns the context map, changed or
- * not. Every failure of the deck is `Error{kind: "fsm"}`; errors a guard or
- * hook throws pass through unchanged.
+ * not. Every failure of the deck is `Error{kind: "fsm"}`, except a document
+ * past a cap in `load` (its own `MAX_STATES` / `MAX_EDGES`, or the
+ * decoder's nesting and node caps), which is the generic kind `"limit"`;
+ * errors a guard or hook throws pass through unchanged.
  *
  * @module fsm
  * @example
@@ -34,6 +36,9 @@ use regex;
 use strings;
 use toml;
 use yaml;
+
+# This module's file, as error positions name it (see `wrongResult`).
+def const HERE as string init ownFile();
 
 /** The `kind` of every error the deck throws. */
 export def const ERROR_KIND as string init "fsm";
@@ -521,11 +526,10 @@ func choose(cands as list of Transition, state as string, ctx as map of string t
  */
 func runGuard(guard as func, s as Step) {
     try {
-        def guardAnswer as bool init $guard($s);
-        return $guardAnswer;
+        def answer as bool init $guard($s);
+        return $answer;
     } catch (e) {
-        if ($e.kind == "runtime" and
-            strings.startsWith($e.message, "cannot initialize bool variable \"guardAnswer\"")) {
+        if (wrongResult($e)) {
             fail("the guard " + funcName($guard) + " must return a bool");
         }
         throw $e;
@@ -543,17 +547,45 @@ func runGuard(guard as func, s as Step) {
  */
 func runHook(hook as func, s as Step, what as string) {
     try {
-        def hookContext as map of string to string init $hook($s);
-        return $hookContext;
+        def context as map of string to string init $hook($s);
+        return $context;
     } catch (e) {
-        if ($e.kind == "runtime" and
-            strings.startsWith(
-            $e.message,
-            "cannot initialize map of string to string variable \"hookContext\"")) {
+        if (wrongResult($e)) {
             fail($what + " (" + funcName($hook) + ") must return the context map");
         }
         throw $e;
     }
+}
+
+/**
+ * Whether an error caught around a guard or hook call is the typed local
+ * refusing its result, rather than something the function itself threw. A
+ * result of the wrong type is a runtime error positioned in this file (at
+ * the typed local); a guard or hook is the caller's own top-level function,
+ * so anything failing inside it is positioned in the caller's file. The
+ * error's position is data, so no message text is read.
+ *
+ * @param e {Error} the caught error
+ * @return {bool} whether the result had the wrong type
+ */
+func wrongResult(e as Error) {
+    return $e.kind == "runtime" and $e.file == HERE;
+}
+
+/**
+ * The file this module runs from, as the interpreter names it in an
+ * error's position: found once by failing on purpose.
+ *
+ * @return {string} the path
+ */
+func ownFile() {
+    try {
+        def none as list of string init [];
+        return $none[1];
+    } catch (e) {
+        return $e.file;
+    }
+    return "";
 }
 
 /**
@@ -857,6 +889,18 @@ func docFail(ptr as string, message as string) {
 }
 
 /**
+ * Fail `load` on a document past one of its caps: the generic kind "limit",
+ * the message as `docFail` writes it.
+ *
+ * @param ptr {string} the JSON pointer of the node
+ * @param message {string} which cap
+ * @throws {Error} kind "limit", always
+ */
+func docLimit(ptr as string, message as string) {
+    throw Error{kind: "limit", message: "fsm: load: " + $ptr + ": " + $message};
+}
+
+/**
  * A string node.
  *
  * @param doc {yaml.Value} the document
@@ -887,7 +931,7 @@ func docStrings(doc as yaml.Value, ptr as string, limit as int, what as string) 
         docFail($ptr, "expected a list of strings, found " + yaml.typeOf($doc, $ptr));
     }
     if (yaml.length($doc, $ptr) > $limit) {
-        docFail($ptr, $what);
+        docLimit($ptr, $what);
     }
     def out as list of string init [];
     def i as int init 0;
@@ -1046,8 +1090,9 @@ func fromDoc(doc as yaml.Value, funcs as map of string to func) {
  * @param funcs {map of string to func} the guards and hooks by name; `{}`
  *   when the document names none
  * @return {Machine} the machine, built as the `add*` functions would
- * @throws {Error} on a parse error, a missing or unknown key, a wrong type,
- *   a function not in `funcs`, or anything the `add*` functions refuse
+ * @throws {Error} kind "fsm" on a parse error, a missing or unknown key, a
+ *   wrong type, a function not in `funcs`, or anything the `add*` functions
+ *   refuse; kind "limit" past `MAX_STATES`, `MAX_EDGES` or the decoder's caps
  * @example
  *   def m as fsm.Machine init fsm.load(fs.readString("order.toml"), "toml", {
  *       "isManager": isManager,
@@ -1067,7 +1112,9 @@ export func load(text as string, format as string, funcs as map of string to fun
             fail("load: format must be toml, yaml or json, not " + json.encode($format));
         }
     } catch (e) {
-        if ($e.kind == ERROR_KIND) {
+        # the deck's own errors, and a decoder's reached cap (kind "limit"),
+        # pass on as they are
+        if ($e.kind == ERROR_KIND or $e.kind == "limit") {
             throw $e;
         }
         fail("load: not valid " + $format + ": " + $e.message);

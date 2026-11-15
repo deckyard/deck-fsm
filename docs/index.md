@@ -55,7 +55,11 @@ Every failure of the deck is `Error{kind: "fsm"}`:
 - a guard or hook that returned the wrong thing:
   `fsm: order: the enter hook of approved (stamp) must return the context map`.
 
-An error a guard or hook throws reaches the caller unchanged.
+A document past a cap in `load` (`MAX_STATES`, `MAX_EDGES`, or the decoder's
+nesting and node caps) is the generic `Error{kind: "limit"}` instead, as in
+every library. An error a guard or hook throws reaches the caller unchanged,
+a runtime fault inside it included: the deck tells a wrong result from such a
+fault by where the error happened, not by its text.
 
 ## Requirements
 

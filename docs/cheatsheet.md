@@ -10,8 +10,9 @@ Every export of `@deckyard/fsm`. Guides are listed in
 import "@deckyard/fsm/" as fsm;
 ```
 
-Every failure is `Error{kind: "fsm"}`; errors a guard or hook throws pass
-through unchanged. An `m` argument is a `Machine`. A `ctx` argument is a
+Every failure is `Error{kind: "fsm"}`, except a document past a cap in `load`
+(`MAX_STATES`, `MAX_EDGES`, or the decoder's nesting and node caps), which is
+`Error{kind: "limit"}`; errors a guard or hook throws pass through unchanged. An `m` argument is a `Machine`. A `ctx` argument is a
 `map of string to string`, `{}` when there is none.
 
 ## Constants

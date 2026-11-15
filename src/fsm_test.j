@@ -269,6 +269,37 @@ func testWrongResultsNameTheFunction() {
     testing.assertEqual(failure(badGuardFired), "fsm: the guard badGuard must return a bool");
 }
 
+# A guard or hook whose own code fails on a typed local keeps its error: the
+# deck tells a wrong result from the function's own failure by the error's
+# position, not its text, so even a local named as the deck's once were is
+# not mistaken for a wrong result.
+func echo(s as string) {
+    return $s;
+}
+
+func faultyGuard(s as Step) {
+    def guardAnswer as bool init echo($s.event);
+    return $guardAnswer;
+}
+
+func faultyHook(s as Step) {
+    def hookContext as map of string to string init echo($s.event);
+    return $hookContext;
+}
+
+func faultyGuardFired() {
+    fire(addGuarded(order(), "go", ["draft"], "review", faultyGuard), "draft", "go", {});
+}
+
+func faultyHookFired() {
+    fire(onEnter(order(), "review", faultyHook), "draft", "submit", {});
+}
+
+func testAFaultInsideAGuardOrHookPassesThrough() {
+    testing.assertThrows("faultyGuardFired", "runtime");
+    testing.assertThrows("faultyHookFired", "runtime");
+}
+
 func hookThrows() {
     fire(onEnter(order(), "review", refuseHook), "draft", "submit", {});
 }
@@ -426,6 +457,24 @@ func loadFailure(text as string, format as string) {
     return "";
 }
 
+/**
+ * The message `load` fails with on a document past a cap, which must be the
+ * generic kind "limit".
+ *
+ * @param text {string} the document
+ * @param format {string} its format
+ * @return {string} the message; "" when it loads
+ */
+func loadLimit(text as string, format as string) {
+    try {
+        load($text, $format, funcs());
+    } catch (e) {
+        testing.assertEqual($e.kind, "limit");
+        return $e.message;
+    }
+    return "";
+}
+
 func testLoadRefusesBadDocuments() {
     def base as string init "name: o\ninitial: a\nstates: [a, b]\n";
     def cases as map of string to string init {
@@ -494,6 +543,20 @@ func numbered(n as int) {
     return $out;
 }
 
+func deepJson() {
+    load(strings.repeat("[", 5000) + strings.repeat("]", 5000), "json", {});
+}
+
+func deepYaml() {
+    load("name: " + strings.repeat("[", 5000) + strings.repeat("]", 5000), "yaml", {});
+}
+
+# A document nested past the decoder's caps: the decoder's "limit", passed on.
+func testLoadPassesDecoderCapsOn() {
+    testing.assertThrows("deepJson", "limit");
+    testing.assertThrows("deepYaml", "limit");
+}
+
 func testLoadLimitsDocuments() {
     def all as string init strings.join(numbered(1000), ", ");
     def y as string init "name: big\ninitial: s0\nstates: &all [" + $all + "]\ntransitions:\n";
@@ -503,11 +566,11 @@ func testLoadLimitsDocuments() {
         $i = $i + 1;
     }
     testing.assertTrue(strings.contains(
-        loadFailure($y, "yaml"),
+        loadLimit($y, "yaml"),
         "/transitions/10/from: the transitions name more than MAX_EDGES"));
     def many as string init strings.join(numbered(MAX_STATES + 1), ", ");
     testing.assertTrue(strings.contains(
-        loadFailure("name: big\ninitial: s0\nstates: [" + $many + "]\ntransitions: []\n", "yaml"),
+        loadLimit("name: big\ninitial: s0\nstates: [" + $many + "]\ntransitions: []\n", "yaml"),
         "/states: more than MAX_STATES states"));
 }
 
