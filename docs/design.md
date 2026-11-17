@@ -121,11 +121,3 @@ Floor `>=0.26.0` for `jennifer` and `jennifer-tiny`, no capability. It uses
 `toml`, `yaml`, `json`, `regex` and the collection libraries, all in the tiny
 build. M28.68 (decoder caps throw `"limit"`) changes what `load` receives from
 the decoders, but `load` rewraps it, so the deck's behaviour is unchanged.
-
-## History
-
-- 2026-11-03, 0.1.0: first release.
-- 2026-11-11: floor raised to 0.26.0.
-- 2026-11-15, 0.2.0: document caps and decoder caps are kind `"limit"`; a
-  wrong guard or hook result is recognised by the error's position instead
-  of its message (user decisions).
