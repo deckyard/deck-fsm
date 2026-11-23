@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 # SPDX-FileCopyrightText: Copyright (C) 2026 mplx <mplx@jennifer-lang.dev>
-# pragma-jennifer-version: >=0.26.0
+# pragma-jennifer-version: >=0.27.0
 
 /**
  * White-box tests for the entry module: jennifer test src/fsm_test.j
@@ -83,11 +83,11 @@ func testBuilding() {
 }
 
 func longName() {
-    machine(strings.repeat("a", MAX_NAME + 1), "x");
+    machine(strings.replicate("a", MAX_NAME + 1), "x");
 }
 
 func testNamesAreChecked() {
-    for (def good in ["in-review", "v1.2", "_x", "1st", strings.repeat("a", MAX_NAME)]) {
+    for (def good in ["in-review", "v1.2", "_x", "1st", strings.replicate("a", MAX_NAME)]) {
         testing.assertEqual(checkName($good, "state"), $good);
     }
     for (def bad in [
@@ -544,11 +544,11 @@ func numbered(n as int) {
 }
 
 func deepJson() {
-    load(strings.repeat("[", 5000) + strings.repeat("]", 5000), "json", {});
+    load(strings.replicate("[", 5000) + strings.replicate("]", 5000), "json", {});
 }
 
 func deepYaml() {
-    load("name: " + strings.repeat("[", 5000) + strings.repeat("]", 5000), "yaml", {});
+    load("name: " + strings.replicate("[", 5000) + strings.replicate("]", 5000), "yaml", {});
 }
 
 # A document nested past the decoder's caps: the decoder's "limit", passed on.

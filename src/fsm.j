@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: LGPL-3.0-only
 # SPDX-FileCopyrightText: Copyright (C) 2026 mplx <mplx@jennifer-lang.dev>
-# pragma-jennifer-version: >=0.26.0
+# pragma-jennifer-version: >=0.27.0
 
 /**
  * Finite state machines.
@@ -744,7 +744,7 @@ export func check(m as Machine) {
 func funcName(f as func) {
     def shown as string init convert.toString($f);
     if (regex.matches("^<func [A-Za-z_][A-Za-z0-9_]*>$", $shown)) {
-        return strings.substring($shown, 6, len($shown) - 1);
+        return $shown[6..len($shown) - 1];
     }
     return "guard";
 }

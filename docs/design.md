@@ -117,7 +117,8 @@ as hostile:
 
 ## Dependencies on the interpreter
 
-Floor `>=0.26.0` for `jennifer` and `jennifer-tiny`, no capability. It uses
+Floor `>=0.27.0` for `jennifer` and `jennifer-tiny` (for `strings.replicate`),
+no capability. It uses
 `toml`, `yaml`, `json`, `regex` and the collection libraries, all in the tiny
 build. M28.68 (decoder caps throw `"limit"`) changes what `load` receives from
 the decoders, but `load` rewraps it, so the deck's behaviour is unchanged.
