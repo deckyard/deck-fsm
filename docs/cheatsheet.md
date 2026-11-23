@@ -90,6 +90,9 @@ Every failure is `Error{kind: "fsm"}`, except a document past a cap in `load`
 | `fsm.isState(m, state)` | `bool` | whether a string is a state |
 | `fsm.isFinal(m, state)` | `bool` | whether a state is final |
 
+`fire`, `can`, `events` and `isFinal` throw kind `"fsm"` for a string that
+is not a state of the machine; test a stored state with `isState` first.
+
 ## Drawing
 
 | Function | Returns | Does |

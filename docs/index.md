@@ -53,7 +53,9 @@ Every failure of the deck is `Error{kind: "fsm"}`:
 - a document `load` cannot use, with the place in it:
   `fsm: load: /transitions/2/to: expected a string, found int`;
 - a guard or hook that returned the wrong thing:
-  `fsm: order: the enter hook of approved (stamp) must return the context map`.
+  `fsm: order: the guard (isManager) must return a bool`,
+  `fsm: order: the enter hook of approved (stamp) must return the context map`
+  (the name in brackets is left out when the interpreter does not give one).
 
 A document past a cap in `load` (`MAX_STATES`, `MAX_EDGES`, or the decoder's
 nesting and node caps) is the generic `Error{kind: "limit"}` instead, as in

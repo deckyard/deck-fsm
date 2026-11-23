@@ -123,6 +123,12 @@ def m as fsm.Machine init fsm.load(fs.readString("order.toml"), "toml", {
 });
 ```
 
+The map names functions as values, and only a function of the current file
+can be written that way: `orders.isManager` is not a value outside the
+`orders` module. When the guards and hooks live in a module, let that module
+build the map (an exported `functions()` returning it) and pass the result to
+`fsm.load`.
+
 | Key | Holds |
 |---|---|
 | `name`, `initial` | strings, required |

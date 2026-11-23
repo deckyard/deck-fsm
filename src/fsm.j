@@ -326,6 +326,7 @@ export func addGuarded(
     sources as list of string,
     target as string,
     guard as func) {
+    checkName($event, "event");
     if (not isSet($guard)) {
         fail($m.name + ": " + $event + ": the guard is a null function");
     }
@@ -492,13 +493,18 @@ func candidates(m as Machine, state as string, event as string) {
  * not the machine: a function that calls a function value gets its
  * arguments copied, and a machine can be large.
  *
+ * @param name {string} the machine's name, for a guard's error message
  * @param cands {list of Transition} from `candidates`
  * @param state {string} the current state
  * @param ctx {map of string to string} the context the guards see
  * @return {int} its index in `cands`; -1 when every guard refused; -2 when
  *   there are no candidates
  */
-func choose(cands as list of Transition, state as string, ctx as map of string to string) {
+func choose(
+    name as string,
+    cands as list of Transition,
+    state as string,
+    ctx as map of string to string) {
     if (len($cands) == 0) {
         return -2;
     }
@@ -508,7 +514,7 @@ func choose(cands as list of Transition, state as string, ctx as map of string t
             return $i;
         }
         def s as Step init Step{event: $t.event, source: $state, target: $t.target, ctx: $ctx};
-        if (runGuard($t.guard, $s)) {
+        if (runGuard($name, $t.guard, $s)) {
             return $i;
         }
         $i = $i + 1;
@@ -520,17 +526,18 @@ func choose(cands as list of Transition, state as string, ctx as map of string t
  * Call a guard. A result that is not a `bool` becomes the deck's error, so
  * the message names the guard; anything the guard throws passes through.
  *
+ * @param name {string} the machine's name, for the message
  * @param guard {func} the guard
  * @param s {Step} what it decides on
  * @return {bool} its answer
  */
-func runGuard(guard as func, s as Step) {
+func runGuard(name as string, guard as func, s as Step) {
     try {
         def answer as bool init $guard($s);
         return $answer;
     } catch (e) {
         if (wrongResult($e)) {
-            fail("the guard " + funcName($guard) + " must return a bool");
+            fail($name + ": the guard" + named($guard) + " must return a bool");
         }
         throw $e;
     }
@@ -551,7 +558,7 @@ func runHook(hook as func, s as Step, what as string) {
         return $context;
     } catch (e) {
         if (wrongResult($e)) {
-            fail($what + " (" + funcName($hook) + ") must return the context map");
+            fail($what + named($hook) + " must return the context map");
         }
         throw $e;
     }
@@ -608,7 +615,7 @@ func ownFile() {
 export func fire(m as Machine, state as string, event as string, ctx as map of string to string) {
     known($m, $state);
     def cands as list of Transition init candidates($m, $state, $event);
-    def i as int init choose($cands, $state, $ctx);
+    def i as int init choose($m.name, $cands, $state, $ctx);
     if ($i == -2) {
         fail($m.name + ": no " + json.encode($event) + " transition from " + $state);
     }
@@ -637,7 +644,7 @@ export func fire(m as Machine, state as string, event as string, ctx as map of s
  */
 export func can(m as Machine, state as string, event as string, ctx as map of string to string) {
     known($m, $state);
-    return choose(candidates($m, $state, $event), $state, $ctx) >= 0;
+    return choose($m.name, candidates($m, $state, $event), $state, $ctx) >= 0;
 }
 
 /**
@@ -654,7 +661,7 @@ export func events(m as Machine, state as string, ctx as map of string to string
     known($m, $state);
     def out as list of string init [];
     for (def event in $m.exits[$state]) {
-        if (choose(candidates($m, $state, $event), $state, $ctx) >= 0) {
+        if (choose($m.name, candidates($m, $state, $event), $state, $ctx) >= 0) {
             $out[] = $event;
         }
     }
@@ -739,14 +746,29 @@ export func check(m as Machine) {
  * A function value's name, for a diagram label.
  *
  * @param f {func} the function
- * @return {string} its name; `"guard"` when the interpreter does not say
+ * @return {string} its name; `""` when the interpreter does not say
  */
 func funcName(f as func) {
     def shown as string init convert.toString($f);
     if (regex.matches("^<func [A-Za-z_][A-Za-z0-9_]*>$", $shown)) {
         return $shown[6..len($shown) - 1];
     }
-    return "guard";
+    return "";
+}
+
+/**
+ * A function value's name for a message: ` (name)`, or nothing when the
+ * interpreter does not say, so an unnamed hook is not called a guard.
+ *
+ * @param f {func} the function
+ * @return {string} the name in brackets with a leading space, or `""`
+ */
+func named(f as func) {
+    def name as string init funcName($f);
+    if ($name == "") {
+        return "";
+    }
+    return " (" + $name + ")";
 }
 
 /**
@@ -758,7 +780,11 @@ func funcName(f as func) {
  */
 func label(t as Transition) {
     if (isSet($t.guard)) {
-        return $t.event + " [" + funcName($t.guard) + "]";
+        def guard as string init funcName($t.guard);
+        if ($guard == "") {
+            $guard = "guard";
+        }
+        return $t.event + " [" + $guard + "]";
     }
     return $t.event;
 }

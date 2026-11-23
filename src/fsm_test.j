@@ -266,7 +266,21 @@ func testWrongResultsNameTheFunction() {
     testing.assertEqual(
         failure(silentHookFired),
         "fsm: order: the leave hook of draft (silentHook) must return the context map");
-    testing.assertEqual(failure(badGuardFired), "fsm: the guard badGuard must return a bool");
+    testing.assertEqual(
+        failure(badGuardFired),
+        "fsm: order: the guard (badGuard) must return a bool");
+}
+
+# A bad event name is reported as one before anything is said about the guard,
+# which a message would otherwise name the unchecked event in.
+func testAddGuardedChecksTheEventFirst() {
+    testing.assertContains(failure(guardedWithBadEvent), "event");
+    testing.assertFalse(strings.contains(failure(guardedWithBadEvent), "null function"));
+}
+
+func guardedWithBadEvent() {
+    def none as func;
+    addGuarded(order(), "", ["draft"], "review", $none);
 }
 
 # A guard or hook whose own code fails on a typed local keeps its error: the
