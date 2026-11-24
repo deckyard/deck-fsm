@@ -518,9 +518,10 @@ func testLoadRefusesBadDocuments() {
             testing.assertEqual($got, $cases[$text]);
         }
     }
-    testing.assertTrue(strings.contains(
-        loadFailure("name = 'o'\nwhen = 2026-11-03\n", "toml"),
-        "/when: a datetime has no place"));
+    # the TOML node type: "datetime" before 0.28.0, "local-date" from 0.28.0 on
+    def dated as string init loadFailure("name = 'o'\nwhen = 2026-11-03\n", "toml");
+    testing.assertTrue(strings.contains($dated, "/when: a datetime has no place") or
+        strings.contains($dated, "/when: a local-date has no place"));
     testing.assertTrue(strings.contains(loadFailure("name = \n", "toml"), "not valid toml"));
     testing.assertTrue(strings.contains(
         loadFailure("\{\}", "xml"),
