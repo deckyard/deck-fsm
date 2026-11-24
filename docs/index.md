@@ -66,3 +66,10 @@ fault by where the error happened, not by its text.
 ## Requirements
 
 Jennifer 0.27.0 or newer, `jennifer` or `jennifer-tiny`. No capabilities.
+
+## Trademarks
+
+Mermaid™ and Graphviz™ may be trademarks of their respective owners, as may
+other product and company names. They are used only to identify the formats
+this deck writes. This deck is an independent project, not affiliated with,
+sponsored or endorsed by the Mermaid or Graphviz projects.

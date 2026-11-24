@@ -7,8 +7,8 @@
 
 Finite state machines as plain values: build a `Machine` in code or `load` it
 from TOML, YAML or JSON, `check` it for unreachable states and dead ends,
-`fire` events with guards and enter / leave hooks, and draw it as Mermaid or
-Graphviz. Pure computation with no I/O, so the deck needs no capability and
+`fire` events with guards and enter / leave hooks, and draw it as Mermaid™ or
+Graphviz™. Pure computation with no I/O, so the deck needs no capability and
 runs on `jennifer-tiny`.
 
 Out of scope:

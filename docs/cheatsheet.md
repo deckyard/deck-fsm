@@ -97,5 +97,5 @@ is not a state of the machine; test a stored state with `isState` first.
 
 | Function | Returns | Does |
 |---|---|---|
-| `fsm.mermaid(m)` | `string` | a Mermaid `stateDiagram-v2` |
-| `fsm.dot(m)` | `string` | a Graphviz digraph |
+| `fsm.mermaid(m)` | `string` | a Mermaid™ `stateDiagram-v2` |
+| `fsm.dot(m)` | `string` | a Graphviz™ digraph |

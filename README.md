@@ -9,7 +9,7 @@ states and transitions, fire events with guards and enter and leave hooks,
 and keep the current state wherever the program already keeps its data. A
 misspelt state or a transition that could never be taken fails when the
 machine is built; `check` finds unreachable states and dead ends. Machines
-load from TOML, YAML or JSON and draw as Mermaid or Graphviz.
+load from TOML, YAML or JSON and draw as Mermaid™ or Graphviz™.
 
 **[Documentation](https://deckyard.github.io/deck-fsm/)**
 
@@ -52,6 +52,13 @@ jennifer test src/fsm_test.j         # the test overlay
 tools/check-docs.sh                  # docs against the code
 tools/pack.sh dist                   # build the release archive
 ```
+
+## Trademarks
+
+Mermaid™ and Graphviz™ may be trademarks of their respective owners, as may
+other product and company names. They are used only to identify the formats
+this deck writes. This deck is an independent project, not affiliated with,
+sponsored or endorsed by the Mermaid or Graphviz projects.
 
 ## Licence
 
